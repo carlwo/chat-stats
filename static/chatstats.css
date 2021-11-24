@@ -1,0 +1,20 @@
+table tr:first-child {
+    font-weight: bold;
+}
+
+table td {
+    font-size: large;
+}
+
+table td:nth-child(2),
+table td:nth-child(3) {
+    text-align: right;
+}
+
+progress {
+    margin-top: 0.3em;
+}
+
+.notification {
+    max-width: 32em;
+}

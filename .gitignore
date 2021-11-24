@@ -1,0 +1,14 @@
+# files generated at runtime
+
+*.db
+*.log
+*.lock
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Flask stuff:
+instance/
+.webassets-cache
