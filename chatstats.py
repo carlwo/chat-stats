@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from chat_downloader import ChatDownloader
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, request, render_template, jsonify, redirect, url_for
 from re import sub, search
 from multiprocessing import Process
+from time import sleep
 import os
 import sqlite3
 import logging
@@ -20,52 +21,71 @@ def clean_msg(msg):
     msg = msg.strip()                   # remove spaces at the beginning and at the end
     return msg
 
-def get_db():
-    return os.path.join(os.path.dirname(os.path.abspath(__file__)), 'db', 'chat.db')
-
-def download_chat(url,lockfile_abspath):
-    if os.path.exists(lockfile_abspath):
+def download_chat(url):
+    global DB, DOWNLOAD_LOCK
+    
+    if os.path.exists(DOWNLOAD_LOCK):
         return
 
-    with open(lockfile_abspath,'w') as lockfile:
+    with open(DOWNLOAD_LOCK,'w') as lockfile:
         lockfile.write(str(os.getpid()) + chr(31) + url)
 
     try:
-        db = get_db()
-        if os.path.exists(db):
-            os.remove(db)
-        if not os.path.exists(os.path.dirname(db)):
-            os.mkdir(os.path.dirname(db))
-        con = sqlite3.connect(db, isolation_level = None)
+        if os.path.exists(DB):
+            os.remove(DB)
+        if not os.path.exists(os.path.dirname(DB)):
+            os.mkdir(os.path.dirname(DB))
+        con = sqlite3.connect(DB, isolation_level = None)
         cur = con.cursor()
-
+        
+        cur.execute('PRAGMA journal_mode = OFF')
         cur.execute('CREATE TABLE messages (unix_time integer, author_id text, author_name text, message_type text, message text, status text)')
-
+        
         chat = ChatDownloader().get_chat(url)
         for row in chat:
             clean_message = clean_msg(row['message'])
             if len(clean_message) != 0:
-                cur.execute('INSERT INTO messages (unix_time, author_id, author_name, message_type, message, status) VALUES (?, ?, ?, ?, ?, ?)', [int(row['timestamp']),row['author']['id'],row['author']['name'],row['message_type'],clean_message,'C'])
-
+                cur.execute('INSERT INTO messages (unix_time, author_id, author_name, message_type, message, status) VALUES (?, ?, ?, ?, ?, ?)',
+                                [int(row['timestamp']),row['author']['id'],row['author']['name'],row['message_type'],clean_message,'C'])
+        
         con.close()
     except KeyboardInterrupt:
         pass
     finally:
-        if os.path.exists(lockfile_abspath):
-            os.remove(lockfile_abspath)
+        if os.path.exists(DOWNLOAD_LOCK):
+            os.remove(DOWNLOAD_LOCK)
+
+def manage_download(url):
+    global DOWNLOAD_LOCK, EXIT_LOCK
+    
+    try:
+        d = Process(target=download_chat, args=(url,), daemon=True)
+        d.start()
+        while d.is_alive():
+            sleep(1)
+            if os.path.exists(EXIT_LOCK) or not os.path.exists(DOWNLOAD_LOCK):
+                d.terminate()
+                d.join()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        if os.path.exists(DOWNLOAD_LOCK):
+            os.remove(DOWNLOAD_LOCK)
+        if os.path.exists(EXIT_LOCK):
+            os.remove(EXIT_LOCK)
 
 app = Flask(__name__)
 
 @app.route("/", methods=['GET', 'POST'])
 def index():
+    global DOWNLOAD_LOCK
     if request.method == 'POST':
-        lockfile_abspath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'chatdownload.lock')
-        if os.path.exists(lockfile_abspath):
-            with open(lockfile_abspath,'r') as lockfile:
+        if os.path.exists(DOWNLOAD_LOCK):
+            with open(DOWNLOAD_LOCK,'r') as lockfile:
                 lockinfo = lockfile.readline().split(chr(31),1)
                 return render_template('chatstats.html', url = lockinfo[1], locked = True)
         else:
-            p = Process(target=download_chat, args=(request.form['url'],lockfile_abspath))
+            p = Process(target=manage_download, args=(request.form['url'],))
             p.start()
             return render_template('chatstats.html', url = request.form['url'])
     else:
@@ -73,9 +93,10 @@ def index():
 
 @app.route("/archive_messages")
 def archive_messages():
-    db = get_db()
-    con = sqlite3.connect(db, isolation_level = None)
+    global DB
+    con = sqlite3.connect(DB, isolation_level = None)
     cur = con.cursor()
+    cur.execute('PRAGMA journal_mode = OFF')
     cur.execute("UPDATE messages SET status = 'A' WHERE status = 'C'")
     total_changes = con.total_changes
     con.close()
@@ -83,8 +104,8 @@ def archive_messages():
 
 @app.route("/get_current_top_10")
 def get_current_top_10():
-    db = get_db()
-    con = sqlite3.connect(db, isolation_level = None)
+    global DB
+    con = sqlite3.connect(DB, isolation_level = None)
     cur = con.cursor()
     cur.execute(''' 
         WITH filtered_messages AS
@@ -110,11 +131,25 @@ def get_title():
     match = search(r'<title[^>]*>([^<]+)</title>', requests.get(url).text)
     return jsonify(match.group(1) if match else request.json)
 
+@app.route("/exit")
+def exit():
+    global EXIT_LOCK, DOWNLOAD_LOCK
+    if os.path.exists(DOWNLOAD_LOCK):
+        with open(EXIT_LOCK,'w') as lockfile:
+            pass
+    return redirect(url_for('index'))
+
 if __name__ == '__main__':
-    logfile_abspath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log', 'chatstats.log')
-    if not os.path.exists(os.path.dirname(logfile_abspath)):
-        os.mkdir(os.path.dirname(logfile_abspath))
-    logging.basicConfig(filename=logfile_abspath, filemode='w', level=logging.INFO)
+    # set global constants
+    FILEDIR = os.path.dirname(os.path.abspath(__file__))
+    DB            = os.path.join(FILEDIR, 'db', 'chat.db')
+    LOGFILE       = os.path.join(FILEDIR, 'log', 'chatstats.log')
+    DOWNLOAD_LOCK = os.path.join(FILEDIR, 'download.lock')
+    EXIT_LOCK     = os.path.join(FILEDIR, 'exit.lock')
+
+    if not os.path.exists(os.path.dirname(LOGFILE)):
+        os.mkdir(os.path.dirname(LOGFILE))
+    logging.basicConfig(filename=LOGFILE, filemode='w', level=logging.INFO)
 
     os.environ['FLASK_ENV'] = 'development'
     app.run(host='localhost', port=5000, debug=False)

@@ -6,12 +6,13 @@
     <title>Chat Stats</title>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='chatstats.css') }}">
   </head>
   <body>
   <div class="container">
   <br>
   <br>
-  <h1 class="title">Chat Stats</h1>
+  <h1 class="title margin-top-0p25">Chat Stats</h1>
   <h2 class="subtitle">Please enter a URL of a livestream or past broadcast from YouTube, Twitch or Reddit:</h2>
   <form method="post">
   <div class="field">

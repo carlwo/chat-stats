@@ -11,6 +11,14 @@ table td:nth-child(3) {
     text-align: right;
 }
 
+a.tag:hover {
+    text-decoration: none;
+}
+
+.margin-top-0p25 {
+    margin-top:0.25em;
+}
+
 progress {
     margin-top: 0.3em;
 }

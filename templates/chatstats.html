@@ -11,7 +11,7 @@
   <body onload="fetch_title('{{ url }}')"> 
   <div class="container">
     <br>
-    <br>
+    <div class="has-text-right"><a class="tag is-medium" href="{{ url_for('exit') }}">Exit&nbsp;<button class="delete"></button></a></div>
     <h1 class="title">Chat Stats</h1>
     <h2 class="subtitle" id="subtitle">{{ url }}</h2>
     {% if locked %}
@@ -19,7 +19,7 @@
     <button class="delete" onclick="hide_notification('warning')"></button>
     <strong>Warning:</strong> There is a running download process with the url<br>
     {{ url }}<br>
-    Please wait until the download is finished or stop it manually.
+    Please wait until the download is finished or terminate it by pressing the exit button.
     </div>
 	{% endif %}
     <div class="notification" id="notification_info">
