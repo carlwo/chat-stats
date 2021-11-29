@@ -1,5 +1,5 @@
 # Chat Stats
-A small tool to retrieve statistics about chat messages from livestreams and past broadcasts.
+A small tool to retrieve statistics about chat messages from livestreams and past broadcasts from YouTube, Twitch or Reddit.
 
 ## Installation
 
@@ -8,11 +8,19 @@ This application requires [Python 3](https://www.python.org/), [Flask](https://p
     pip install Flask
     pip install chat-downloader
 
+Alternatively, you can build a docker container for the app with the following command:
+
+    docker-compose build
+
 ## Usage
 
 Execute the script chatstats.py to start a server on port 5000:
 
     python chatstats.py
+
+Or start the docker container:
+
+    docker-compose up -d
 
 Then open up our favorite browser and navigate to [http://localhost:5000](http://localhost:5000).
 
