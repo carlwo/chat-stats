@@ -7,7 +7,7 @@ function sanitizeHTML(text) {
 function update_stats(data) {
     if (data.length == 0) { return; }
     var output = 'number of messages: ' + data[0][2] + '<br><table class="table is-striped is-narrow">';
-    data.forEach(row => output += '<tr><td class="is-2"><progress class="progress is-info" value="' + row[1] + '" max="' + row[2] + '"></progress></td><td>' + row[1] + '</td><td>' + row[3].toFixed(1) + '%</td><td>' + sanitizeHTML(row[0]) + '</td></tr>');
+    data.forEach(row => output += '<tr><td><progress class="progress is-info" value="' + row[1] + '" max="' + row[2] + '"></progress></td><td>' + row[1] + '</td><td>' + row[3].toFixed(1) + '%</td><td>' + sanitizeHTML(row[0]) + '</td></tr>');
     output += '</table>';
     document.getElementById('stats').innerHTML = output;
 }
@@ -29,7 +29,7 @@ var intervalID;
 function start() {
     fetch('archive_messages');
     document.getElementById('btn').innerHTML = '<button class="button is-danger" onclick="stop()">Stop</button>';
-    document.getElementById('stats').innerHTML = '<br><table class="table is-striped is-narrow"><tr><td class="is-2"><progress class="progress is-info" max="100"></progress></td><td>gathering chat messages...</td></tr></table>';
+    document.getElementById('stats').innerHTML = '<br><table class="table is-striped is-narrow"><tr><td><progress class="progress is-info" max="100"></progress></td><td>gathering chat messages...</td></tr></table>';
     intervalID = setInterval(fetch_stats, 2000);
 }
 

@@ -19,8 +19,9 @@ a.tag:hover {
     margin-top:0.25em;
 }
 
-progress {
+.progress {
     margin-top: 0.3em;
+    width: 10em;
 }
 
 .notification {

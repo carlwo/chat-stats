@@ -139,7 +139,7 @@ if __name__ == '__main__':
         os.mkdir(os.path.dirname(logfile))
     logging.basicConfig(filename=logfile, filemode='w', level=logging.INFO)
 
-    print(" * Press CTRL+C to quit.")
+    print("[INFO] Press CTRL+C to quit.")
 
     os.environ['FLASK_ENV'] = 'development'
     app.run(host='0.0.0.0', port=5000, debug=False)
