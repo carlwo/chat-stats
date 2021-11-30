@@ -31,6 +31,7 @@ def clean_msg(msg):
 
 def download_chat(url):
     config = get_config()
+
     if os.path.exists(config["download_lock"]):
         return
 
@@ -50,6 +51,8 @@ def download_chat(url):
         
         chat = ChatDownloader().get_chat(url)
         for row in chat:
+            if os.path.exists(config["exit_lock"]) or not os.path.exists(config["download_lock"]):
+                break
             clean_message = clean_msg(row['message'])
             if len(clean_message) != 0:
                 cur.execute('INSERT INTO messages (unix_time, author_id, author_name, message_type, message, status) VALUES (?, ?, ?, ?, ?, ?)',
@@ -59,26 +62,10 @@ def download_chat(url):
     except KeyboardInterrupt:
         pass
     finally:
-        if os.path.exists(config["download_lock"]):
-            os.remove(config["download_lock"])
-
-def manage_download(url):
-    config = get_config()
-    try:
-        d = Process(target=download_chat, args=(url,), daemon=True)
-        d.start()
-        while d.is_alive():
-            sleep(1)
-            if os.path.exists(config["exit_lock"]) or not os.path.exists(config["download_lock"]):
-                d.terminate()
-                d.join()
-    except KeyboardInterrupt:
-        pass
-    finally:
-        if os.path.exists(config["download_lock"]):
-            os.remove(config["download_lock"])
         if os.path.exists(config["exit_lock"]):
             os.remove(config["exit_lock"])
+        if os.path.exists(config["download_lock"]):
+            os.remove(config["download_lock"])
 
 app = Flask(__name__)
 
@@ -91,7 +78,7 @@ def index():
                 lockinfo = lockfile.readline().split(chr(31),1)
                 return render_template('chatstats.html', url = lockinfo[1], locked = True)
         else:
-            p = Process(target=manage_download, args=(request.form['url'],))
+            p = Process(target=download_chat, args=(request.form['url'],))
             p.start()
             return render_template('chatstats.html', url = request.form['url'])
     else:
@@ -140,8 +127,7 @@ def get_title():
 @app.route("/exit")
 def exit():
     config = get_config()
-    global EXIT_LOCK, DOWNLOAD_LOCK
-    
+
     if os.path.exists(config["download_lock"]):
         with open(config["exit_lock"],'w') as lockfile:
             pass
@@ -152,6 +138,8 @@ if __name__ == '__main__':
     if not os.path.exists(os.path.dirname(logfile)):
         os.mkdir(os.path.dirname(logfile))
     logging.basicConfig(filename=logfile, filemode='w', level=logging.INFO)
+
+    print(" * Press CTRL+C to quit.")
 
     os.environ['FLASK_ENV'] = 'development'
     app.run(host='0.0.0.0', port=5000, debug=False)
