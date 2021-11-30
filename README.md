@@ -22,7 +22,7 @@ Or start the docker container:
 
     docker-compose up -d
 
-Then open up our favorite browser and navigate to [http://localhost:5000](http://localhost:5000).
+Then open up your favorite browser and navigate to [http://localhost:5000](http://localhost:5000).
 
 On the index page you will be asked to enter a URL of a livestream or past broadcast from YouTube, Twitch or Reddit.
 
