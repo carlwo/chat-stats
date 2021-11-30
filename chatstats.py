@@ -11,6 +11,14 @@ import sqlite3
 import logging
 import requests
 
+def get_config(param = None):
+    filedir = os.path.dirname(os.path.abspath(__file__))
+    config = {"db": os.path.join(filedir, 'db', 'chat.db'),
+              "logfile": os.path.join(filedir, 'log', 'chatstats.log'),
+              "download_lock": os.path.join(filedir, 'download.lock'),
+              "exit_lock": os.path.join(filedir, 'exit.lock')}
+    return config[param] if param else config
+
 def clean_msg(msg):
     i = 'áÁàÀâÂãÃåÅçÇéÉèÈêÊëËíÍìÌîÎïÏñÑóÓòÒôÔõÕúÚùÙûÛ'
     o = 'aAaAaAaAaAcCeEeEeEeEiIiIiIiInNoOoOoOoOuUuUuU'
@@ -22,20 +30,19 @@ def clean_msg(msg):
     return msg
 
 def download_chat(url):
-    global DB, DOWNLOAD_LOCK
-    
-    if os.path.exists(DOWNLOAD_LOCK):
+    config = get_config()
+    if os.path.exists(config["download_lock"]):
         return
 
-    with open(DOWNLOAD_LOCK,'w') as lockfile:
+    with open(config["download_lock"],'w') as lockfile:
         lockfile.write(str(os.getpid()) + chr(31) + url)
 
     try:
-        if os.path.exists(DB):
-            os.remove(DB)
-        if not os.path.exists(os.path.dirname(DB)):
-            os.mkdir(os.path.dirname(DB))
-        con = sqlite3.connect(DB, isolation_level = None)
+        if os.path.exists(config["db"]):
+            os.remove(config["db"])
+        if not os.path.exists(os.path.dirname(config["db"])):
+            os.mkdir(os.path.dirname(config["db"]))
+        con = sqlite3.connect(config["db"], isolation_level = None)
         cur = con.cursor()
         
         cur.execute('PRAGMA journal_mode = OFF')
@@ -52,36 +59,35 @@ def download_chat(url):
     except KeyboardInterrupt:
         pass
     finally:
-        if os.path.exists(DOWNLOAD_LOCK):
-            os.remove(DOWNLOAD_LOCK)
+        if os.path.exists(config["download_lock"]):
+            os.remove(config["download_lock"])
 
 def manage_download(url):
-    global DOWNLOAD_LOCK, EXIT_LOCK
-    
+    config = get_config()
     try:
         d = Process(target=download_chat, args=(url,), daemon=True)
         d.start()
         while d.is_alive():
             sleep(1)
-            if os.path.exists(EXIT_LOCK) or not os.path.exists(DOWNLOAD_LOCK):
+            if os.path.exists(config["exit_lock"]) or not os.path.exists(config["download_lock"]):
                 d.terminate()
                 d.join()
     except KeyboardInterrupt:
         pass
     finally:
-        if os.path.exists(DOWNLOAD_LOCK):
-            os.remove(DOWNLOAD_LOCK)
-        if os.path.exists(EXIT_LOCK):
-            os.remove(EXIT_LOCK)
+        if os.path.exists(config["download_lock"]):
+            os.remove(config["download_lock"])
+        if os.path.exists(config["exit_lock"]):
+            os.remove(config["exit_lock"])
 
 app = Flask(__name__)
 
 @app.route("/", methods=['GET', 'POST'])
 def index():
-    global DOWNLOAD_LOCK
+    download_lock = get_config("download_lock")
     if request.method == 'POST':
-        if os.path.exists(DOWNLOAD_LOCK):
-            with open(DOWNLOAD_LOCK,'r') as lockfile:
+        if os.path.exists(download_lock):
+            with open(download_lock,'r') as lockfile:
                 lockinfo = lockfile.readline().split(chr(31),1)
                 return render_template('chatstats.html', url = lockinfo[1], locked = True)
         else:
@@ -93,19 +99,19 @@ def index():
 
 @app.route("/archive_messages")
 def archive_messages():
-    global DB
-    con = sqlite3.connect(DB, isolation_level = None)
+    db = get_config("db")
+    con = sqlite3.connect(db, isolation_level = None)
     cur = con.cursor()
     cur.execute('PRAGMA journal_mode = OFF')
     cur.execute("UPDATE messages SET status = 'A' WHERE status = 'C'")
     total_changes = con.total_changes
     con.close()
-    return str(total_changes) + ' messages have been archived.'
+    return jsonify(str(total_changes) + ' messages have been archived.')
 
 @app.route("/get_current_top_10")
 def get_current_top_10():
-    global DB
-    con = sqlite3.connect(DB, isolation_level = None)
+    db = get_config("db")
+    con = sqlite3.connect(db, isolation_level = None)
     cur = con.cursor()
     cur.execute(''' 
         WITH filtered_messages AS
@@ -133,23 +139,19 @@ def get_title():
 
 @app.route("/exit")
 def exit():
+    config = get_config()
     global EXIT_LOCK, DOWNLOAD_LOCK
-    if os.path.exists(DOWNLOAD_LOCK):
-        with open(EXIT_LOCK,'w') as lockfile:
+    
+    if os.path.exists(config["download_lock"]):
+        with open(config["exit_lock"],'w') as lockfile:
             pass
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    # set global constants
-    FILEDIR = os.path.dirname(os.path.abspath(__file__))
-    DB            = os.path.join(FILEDIR, 'db', 'chat.db')
-    LOGFILE       = os.path.join(FILEDIR, 'log', 'chatstats.log')
-    DOWNLOAD_LOCK = os.path.join(FILEDIR, 'download.lock')
-    EXIT_LOCK     = os.path.join(FILEDIR, 'exit.lock')
-
-    if not os.path.exists(os.path.dirname(LOGFILE)):
-        os.mkdir(os.path.dirname(LOGFILE))
-    logging.basicConfig(filename=LOGFILE, filemode='w', level=logging.INFO)
+    logfile = get_config("logfile")
+    if not os.path.exists(os.path.dirname(logfile)):
+        os.mkdir(os.path.dirname(logfile))
+    logging.basicConfig(filename=logfile, filemode='w', level=logging.INFO)
 
     os.environ['FLASK_ENV'] = 'development'
     app.run(host='0.0.0.0', port=5000, debug=False)
