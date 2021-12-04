@@ -21,6 +21,44 @@
   <input class="input" type="text" placeholder="https://www.youtube.com/watch?v=XXXXXXXXXX" name="url" required>
   </div>
   </div>
+  <div class="field">
+  <label class="label">Broadcast type:</label>
+  <div class="control">
+  <label class="radio">
+    <input type="radio" name="stream_type" value="livestream" onclick="check_broadcast_type()"  checked>
+    livestream
+  </label>
+  <label class="radio">
+    <input type="radio" name="stream_type" value="past_broadcast" onclick="check_broadcast_type()" id="radio_past_broadcast">
+    past broadcast
+  </label>
+  </div>
+  </div>
+  <div class="field">
+  <table id="time_input"><tr><td>
+  <label class="label">Start time (HH:MM:SS):</label>
+  <div class="control">
+  <input class="input input-size-2" type="text" name="start_hh" onfocus="this.select()" onfocus="this.select()" oninput="this.value = to_time(this.value)"><div class="colon">:</div><input class="input input-size-2" type="text" name="start_mm" onfocus="this.select()" oninput="this.value = to_time(this.value)"><div class="colon">:</div><input class="input input-size-2" type="text" name="start_ss" onfocus="this.select()" oninput="this.value = to_time(this.value)">
+  </div>Defaults to None (as early as possible)
+  </td><td class="input-size-2"></td><td>
+  <label class="label">End time (HH:MM:SS):</label>
+  <div class="control">
+  <input class="input input-size-2" type="text" name="end_hh" onfocus="this.select()" oninput="this.value = to_time(this.value)"><div class="colon">:</div><input class="input input-size-2" type="text" name="end_mm" onfocus="this.select()" oninput="this.value = to_time(this.value)"><div class="colon">:</div><input class="input input-size-2" type="text" name="end_ss" onfocus="this.select()" oninput="this.value = to_time(this.value)">
+  </div>Defaults to None (until the end)
+  </td></tr></table></div>
+  <div class="field">
+  <label class="label">Chat type (YouTube):</label>
+  <div class="control">
+  <label class="radio">
+    <input type="radio" name="chat_type" value="live" checked>
+    live
+  </label>
+  <label class="radio">
+    <input type="radio" name="chat_type" value="top">
+    top
+  </label>
+  </div>
+  </div>
   <br>
   <div class="field">
   <p class="control">
@@ -29,5 +67,6 @@
   </div>
   </form>
   </div>
+    <script src="{{ url_for('static', filename='chatstats.js') }}"></script> 
   </body>
 </html>

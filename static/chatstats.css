@@ -1,13 +1,13 @@
-table tr:first-child {
+.top10 tr:first-child {
     font-weight: bold;
 }
 
-table td {
+.top10 td {
     font-size: large;
 }
 
-table td:nth-child(2),
-table td:nth-child(3) {
+.top10 td:nth-child(2),
+.top10 td:nth-child(3) {
     text-align: right;
 }
 
@@ -26,4 +26,18 @@ a.tag:hover {
 
 .notification {
     max-width: 32em;
+}
+
+.input-size-2 {
+    width: 5.5ex;
+}
+
+.colon {
+    margin: 0.5em 0.2em;
+    display:inline-block;
+    font-weight: bold;
+}
+
+#time_input{
+    display: none;
 }
