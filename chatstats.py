@@ -29,14 +29,14 @@ def clean_msg(msg):
     msg = msg.strip()                   # remove spaces at the beginning and at the end
     return msg
 
-def download_chat(url):
+def download_chat(url,broadcast_type,start_time,end_time,chat_type):
     config = get_config()
 
     if os.path.exists(config["download_lock"]):
         return
 
     with open(config["download_lock"],'w') as lockfile:
-        lockfile.write(str(os.getpid()) + chr(31) + url)
+        lockfile.write(str(os.getpid()) + chr(31) + broadcast_type + chr(31) + url)
 
     try:
         if os.path.exists(config["db"]):
@@ -48,8 +48,8 @@ def download_chat(url):
         
         cur.execute('PRAGMA journal_mode = OFF')
         cur.execute('CREATE TABLE messages (unix_time integer, author_id text, author_name text, message_type text, message text, status text)')
-        
-        chat = ChatDownloader().get_chat(url)
+
+        chat = ChatDownloader().get_chat(url=url, start_time=start_time, end_time=end_time, chat_type=chat_type)
         for row in chat:
             if os.path.exists(config["exit_lock"]) or not os.path.exists(config["download_lock"]):
                 break
@@ -67,6 +67,12 @@ def download_chat(url):
         if os.path.exists(config["download_lock"]):
             os.remove(config["download_lock"])
 
+def get_time_in_seconds(hh,mm,ss):
+    if len(hh) == 0 and len(mm) == 0 and len(ss) == 0:
+        return None
+    else:
+        return int("0" + hh) * 60 * 60 + int("0" + mm) * 60 + int("0" + ss)
+
 app = Flask(__name__)
 
 @app.route("/", methods=['GET', 'POST'])
@@ -75,12 +81,17 @@ def index():
     if request.method == 'POST':
         if os.path.exists(download_lock):
             with open(download_lock,'r') as lockfile:
-                lockinfo = lockfile.readline().split(chr(31),1)
-                return render_template('chatstats.html', url = lockinfo[1], locked = True)
+                lockinfo = lockfile.readline().split(chr(31),2)
+                return render_template('chatstats.html', url = lockinfo[2], broadcast_type = lockinfo[1], locked = True)
         else:
-            p = Process(target=download_chat, args=(request.form['url'],))
+            url = request.form['url']
+            broadcast_type = request.form['broadcast_type']
+            start_time = get_time_in_seconds(request.form['start_hh'],request.form['start_mm'],request.form['start_ss']) if broadcast_type == "past_broadcast" else None
+            end_time = get_time_in_seconds(request.form['end_hh'],request.form['end_mm'],request.form['end_ss']) if broadcast_type == "past_broadcast" else None
+            chat_type = request.form['chat_type']
+            p = Process(target=download_chat, args=(url,broadcast_type,start_time,end_time,chat_type,))
             p.start()
-            return render_template('chatstats.html', url = request.form['url'])
+            return render_template('chatstats.html', url = url, broadcast_type = broadcast_type)
     else:
         return render_template('index.html')
 

@@ -26,9 +26,11 @@ function fetch_title(url) {
 
 var intervalID;
 
-function start() {
-    fetch('archive_messages');
-    document.getElementById('btn').innerHTML = '<button class="button is-danger" onclick="stop()">Stop</button>';
+function start(broadcast_type = 'live') {
+    if (broadcast_type == 'live') {
+        fetch('archive_messages');
+        document.getElementById('btn').innerHTML = '<button class="button is-danger" onclick="stop()">Stop</button>';
+    }
     document.getElementById('stats').innerHTML = '<br><table class="table top10 is-striped is-narrow"><tr><td><progress class="progress is-info" max="100"></progress></td><td>gathering chat messages...</td></tr></table>';
     intervalID = setInterval(fetch_stats, 2000);
 }
@@ -42,8 +44,11 @@ function hide_notification(notification_id) {
     document.getElementById('notification_' + notification_id).style.display = "none";
 }
 
-function to_time(text) {
+function to_time(text, next_input_id) {
     num = text.replace(/[^0-9]/g, '');
+    if ((next_input_id) && (num.length >= 2)) {
+        document.getElementById(next_input_id).focus();
+    }
     return (num > 59) ? "59" : num;
 }
 
