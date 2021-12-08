@@ -1,30 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'base.html' %}
 
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chat Stats</title>
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
-  <link rel="stylesheet" href="{{ url_for('static', filename='chatstats.css') }}">
-</head>
-
-<body onload="fetch_title('{{ url }}');{% if broadcast_type == 'past_broadcast': %}start('past_broadcast');{% endif %}">
+{% block content %}
   <div class="container">
     <br>
     <div class="has-text-right"><a class="tag is-medium" href="{{ url_for('exit') }}">Exit&nbsp;<button class="delete"></button></a></div>
     <h1 class="title">Chat Stats</h1>
     <h2 class="subtitle" id="subtitle">{{ url }}</h2>
-    {% if locked: %}
+    {%- if locked: %}
     <div class="notification is-warning is-light" id="notification_warning">
       <button class="delete" onclick="hide_notification('warning')"></button>
       <strong>Warning:</strong> There is a running download process with the url<br>
         {{ url }}<br>
         Please wait until the download is finished or terminate it by pressing the exit button.
     </div>
-    {% endif %}
-    {% if broadcast_type == 'livestream': %}
+    {%- endif %}
+    {%- if broadcast_type == 'livestream': %}
     <div class="notification" id="notification_info">
       <button class="delete" onclick="hide_notification('info')"></button>
       Press <em>Start</em> and <em>Stop</em> to get a <strong>ranking of the most frequent<br>
@@ -33,10 +23,23 @@
     </div>
     <div id="btn"><button class="button is-success" onclick="start()">Start</button></div>
     <br>
-    {% endif %}
+    {%- endif %}
     <div id="stats"></div>
   </div>
-  <script src="{{ url_for('static', filename='chatstats.js') }}"></script>
-</body>
+{% endblock %}
 
-</html>
+{% block script %}
+<script>
+function init() {
+  fetch_title('{{ url }}');
+  {%- if broadcast_type == 'past_broadcast': %}
+  start('past_broadcast');
+  {%- endif %}
+}
+if (document.readyState === 'loading') {  // Loading hasn't finished yet
+  document.addEventListener('DOMContentLoaded', init);
+} else {  // `DOMContentLoaded` has already fired
+  init();
+}
+</script>
+{% endblock %}
