@@ -42,3 +42,4 @@ Many thanks to all contributors of the following projects:
  * [Flask](https://palletsprojects.com/p/flask/)
  * [Chat-Downloader](https://github.com/xenova/chat-downloader)
  * [Bulma CSS framework](https://bulma.io/)
+ * [Bootstrap Icons](https://icons.getbootstrap.com/)
