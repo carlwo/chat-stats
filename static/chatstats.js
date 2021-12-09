@@ -18,12 +18,6 @@ function fetch_stats() {
       .then(data => update_stats(data));
 }
 
-function fetch_title(url) {
-    fetch('get_title', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(url)})
-      .then(response => response.json())
-      .then(title => document.getElementById('subtitle').innerText = title);
-}
-
 var intervalID;
 
 function start(broadcast_type = 'live') {

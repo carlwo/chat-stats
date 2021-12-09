@@ -1,11 +1,12 @@
 {% extends 'base.html' %}
 
-{% block content %}
+{%- block content %}
   <div class="container">
+  {%- if status == "OK": %}
     <br>
     <div class="has-text-right"><a class="tag is-medium" href="{{ url_for('exit') }}">Exit&nbsp;<button class="delete"></button></a></div>
     <h1 class="title">Chat Stats</h1>
-    <h2 class="subtitle" id="subtitle">{{ url }}</h2>
+    <h2 class="subtitle" id="subtitle">{{ message }}</h2>
     {%- if locked: %}
     <div class="notification is-warning is-light" id="notification_warning">
       <button class="delete" onclick="hide_notification('warning')"></button>
@@ -25,16 +26,21 @@
     <br>
     {%- endif %}
     <div id="stats"></div>
+  {%- else %} 
+    <br>
+    <br>
+    <h1 class="title margin-top-0p25">Chat Stats</h1>
+    <div class="notification is-danger is-light"><strong>Error:</strong> {{ message }}</div>
+    <a class="tag is-medium" href="{{ url_for('exit') }}">Back</a>
+  {%- endif %}
   </div>
-{% endblock %}
+{%- endblock %}
 
-{% block script %}
+{%- block script %}
+{%- if status == 'OK' and broadcast_type == 'past_broadcast': %}
 <script>
 function init() {
-  fetch_title('{{ url }}');
-  {%- if broadcast_type == 'past_broadcast': %}
   start('past_broadcast');
-  {%- endif %}
 }
 if (document.readyState === 'loading') {  // Loading hasn't finished yet
   document.addEventListener('DOMContentLoaded', init);
@@ -42,4 +48,5 @@ if (document.readyState === 'loading') {  // Loading hasn't finished yet
   init();
 }
 </script>
-{% endblock %}
+{%- endif %}
+{%- endblock %}

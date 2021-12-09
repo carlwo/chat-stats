@@ -1,15 +1,14 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from chat_downloader import ChatDownloader
+from chat_downloader import ChatDownloader, errors
 from flask import Flask, request, render_template, jsonify, redirect, url_for
 from re import sub, search
-from multiprocessing import Process
+from multiprocessing import Process, Pipe
 from time import sleep
 import os
 import sqlite3
 import logging
-import requests
 
 def get_config(param = None):
     filedir = os.path.dirname(os.path.abspath(__file__))
@@ -20,6 +19,7 @@ def get_config(param = None):
     return config[param] if param else config
 
 def clean_msg(msg):
+    """Used to clean a chat message before inserting it into the database."""
     i = 'áÁàÀâÂãÃåÅçÇéÉèÈêÊëËíÍìÌîÎïÏñÑóÓòÒôÔõÕúÚùÙûÛ'
     o = 'aAaAaAaAaAcCeEeEeEeEiIiIiIiInNoOoOoOoOuUuUuU'
     transtab = str.maketrans(i, o)
@@ -29,11 +29,9 @@ def clean_msg(msg):
     msg = msg.strip()                   # remove spaces at the beginning and at the end
     return msg
 
-def download_chat(url,broadcast_type,start_time,end_time,chat_type):
+def download_chat(pipe,url,broadcast_type,start_time,end_time,chat_type):
+    """Retrieve the chat massages and insert them into the database."""
     config = get_config()
-
-    if os.path.exists(config["download_lock"]):
-        return
 
     with open(config["download_lock"],'w') as lockfile:
         lockfile.write(str(os.getpid()) + chr(31) + broadcast_type + chr(31) + url)
@@ -43,13 +41,16 @@ def download_chat(url,broadcast_type,start_time,end_time,chat_type):
             os.remove(config["db"])
         if not os.path.exists(os.path.dirname(config["db"])):
             os.mkdir(os.path.dirname(config["db"]))
+
         con = sqlite3.connect(config["db"], isolation_level = None)
         cur = con.cursor()
-        
+
         cur.execute('PRAGMA journal_mode = OFF')
         cur.execute('CREATE TABLE messages (unix_time integer, author_id text, author_name text, message_type text, message text, status text)')
 
         chat = ChatDownloader().get_chat(url=url, start_time=start_time, end_time=end_time, chat_type=chat_type)
+        pipe.send({"status":"OK", "message":chat.title})
+        pipe.close()
         for row in chat:
             if os.path.exists(config["exit_lock"]) or not os.path.exists(config["download_lock"]):
                 break
@@ -57,10 +58,13 @@ def download_chat(url,broadcast_type,start_time,end_time,chat_type):
             if len(clean_message) != 0:
                 cur.execute('INSERT INTO messages (unix_time, author_id, author_name, message_type, message, status) VALUES (?, ?, ?, ?, ?, ?)',
                                 [int(row['timestamp']),row['author']['id'],row['author']['name'],row['message_type'],clean_message,'C'])
-        
+
         con.close()
     except KeyboardInterrupt:
         pass
+    except (errors.URLNotProvided, errors.ChatGeneratorError, errors.SiteNotSupported, errors.InvalidURL, errors.NoChatReplay) as ex:
+        pipe.send({"status":"ERROR", "message":str(ex)})
+        pipe.close()
     finally:
         if os.path.exists(config["exit_lock"]):
             os.remove(config["exit_lock"])
@@ -89,9 +93,11 @@ def index():
             start_time = get_time_in_seconds(request.form['start_hh'],request.form['start_mm'],request.form['start_ss']) if broadcast_type == "past_broadcast" else None
             end_time = get_time_in_seconds(request.form['end_hh'],request.form['end_mm'],request.form['end_ss']) if broadcast_type == "past_broadcast" else None
             chat_type = request.form['chat_type']
-            p = Process(target=download_chat, args=(url,broadcast_type,start_time,end_time,chat_type,))
+            parent, child = Pipe()
+            p = Process(target=download_chat, args=(child,url,broadcast_type,start_time,end_time,chat_type,))
             p.start()
-            return render_template('chatstats.html', url = url, broadcast_type = broadcast_type)
+            p_response = parent.recv()
+            return render_template('chatstats.html', url = url, broadcast_type = broadcast_type, status = p_response["status"], message = p_response["message"])
     else:
         return render_template('index.html')
 
@@ -129,16 +135,9 @@ def get_current_top_10():
     con.close()
     return jsonify(result)
 
-@app.route("/get_title", methods=['POST'])
-def get_title():
-    url = request.json
-    match = search(r'<title[^>]*>([^<]+)</title>', requests.get(url).text)
-    return jsonify(match.group(1) if match else request.json)
-
 @app.route("/exit")
 def exit():
     config = get_config()
-
     if os.path.exists(config["download_lock"]):
         with open(config["exit_lock"],'w') as lockfile:
             pass

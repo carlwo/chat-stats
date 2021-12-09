@@ -9,6 +9,7 @@
 .top10 td:nth-child(2),
 .top10 td:nth-child(3) {
     text-align: right;
+    white-space: nowrap;
 }
 
 a.tag:hover {
@@ -21,7 +22,7 @@ a.tag:hover {
 
 .progress {
     margin-top: 0.3em;
-    width: 10em;
+    width: 8em;
 }
 
 .notification {
