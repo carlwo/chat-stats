@@ -33,9 +33,6 @@ def download_chat(pipe,url,broadcast_type,start_time,end_time,chat_type):
     """Retrieve the chat massages and insert them into the database."""
     config = get_config()
 
-    with open(config["download_lock"],'w') as lockfile:
-        lockfile.write(str(os.getpid()) + chr(31) + broadcast_type + chr(31) + url)
-
     try:
         if os.path.exists(config["db"]):
             os.remove(config["db"])
@@ -49,8 +46,9 @@ def download_chat(pipe,url,broadcast_type,start_time,end_time,chat_type):
         cur.execute('CREATE TABLE messages (unix_time integer, author_id text, author_name text, message_type text, message text, status text)')
 
         chat = ChatDownloader().get_chat(url=url, start_time=start_time, end_time=end_time, chat_type=chat_type)
+        with open(config["download_lock"],'w') as lockfile:
+            lockfile.write(str(os.getpid()) + chr(31) + broadcast_type + chr(31) + chat.title + chr(31) + url)
         pipe.send({"status":"OK", "message":chat.title})
-        pipe.close()
         for row in chat:
             if os.path.exists(config["exit_lock"]) or not os.path.exists(config["download_lock"]):
                 break
@@ -64,8 +62,8 @@ def download_chat(pipe,url,broadcast_type,start_time,end_time,chat_type):
         pass
     except (errors.URLNotProvided, errors.ChatGeneratorError, errors.SiteNotSupported, errors.InvalidURL, errors.NoChatReplay) as ex:
         pipe.send({"status":"ERROR", "message":str(ex)})
-        pipe.close()
     finally:
+        pipe.close()
         if os.path.exists(config["exit_lock"]):
             os.remove(config["exit_lock"])
         if os.path.exists(config["download_lock"]):
@@ -85,8 +83,8 @@ def index():
     if request.method == 'POST':
         if os.path.exists(download_lock):
             with open(download_lock,'r') as lockfile:
-                lockinfo = lockfile.readline().split(chr(31),2)
-                return render_template('chatstats.html', url = lockinfo[2], broadcast_type = lockinfo[1], locked = True)
+                lockinfo = lockfile.readline().split(chr(31),3)
+                return render_template('chatstats.html', url = lockinfo[3], broadcast_type = lockinfo[1], status = "OK", message = lockinfo[2], locked = True)
         else:
             url = request.form['url']
             broadcast_type = request.form['broadcast_type']
