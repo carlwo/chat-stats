@@ -10,7 +10,7 @@
       <div class="field">
         <label class="label">URL</label>
         <div class="control">
-          <input class="input" type="text" placeholder="https://www.youtube.com/watch?v=XXXXXXXXXX" name="url" required>
+          <input type="text" name="url" class="input" placeholder="https://www.youtube.com/watch?v=XXXXXXXXXX" required>
         </div>
       </div>
       <div class="field">
@@ -32,13 +32,13 @@
             <td>
               <label class="label">Start time (HH:MM:SS):</label>
               <div class="control">
-                <input class="input input-size-2" type="text" name="start_hh" id="start_hh"
+                <input type="text" name="start_hh" id="start_hh" class="input input-size-2"
                   onfocus="this.select()" oninput="this.value = to_time(this.value,'start_mm')">
                 <div class="colon">:</div>
-                <input class="input input-size-2" type="text" name="start_mm" id="start_mm"
+                <input type="text" name="start_mm" id="start_mm" class="input input-size-2"
                   onfocus="this.select()" oninput="this.value = to_time(this.value,'start_ss')">
                 <div class="colon">:</div>
-                <input class="input input-size-2" type="text" name="start_ss" id="start_ss"
+                <input type="text" name="start_ss" id="start_ss" class="input input-size-2"
                   onfocus="this.select()" oninput="this.value = to_time(this.value,'end_hh')">
               </div>Defaults to None (as early as possible)
             </td>
@@ -46,13 +46,13 @@
             <td>
               <label class="label">End time (HH:MM:SS):</label>
               <div class="control">
-                <input class="input input-size-2" type="text" name="end_hh" id="end_hh"
+                <input type="text" name="end_hh" id="end_hh" class="input input-size-2"
                   onfocus="this.select()" oninput="this.value = to_time(this.value,'end_mm')">
                 <div class="colon">:</div>
-                <input class="input input-size-2" type="text" name="end_mm" id="end_mm"
+                <input type="text" name="end_mm" id="end_mm" class="input input-size-2"
                   onfocus="this.select()" oninput="this.value = to_time(this.value,'end_ss')">
                 <div class="colon">:</div>
-                <input class="input input-size-2" type="text" name="end_ss" id="end_ss"
+                <input type="text" name="end_ss" id="end_ss" class="input input-size-2"
                   onfocus="this.select()" oninput="this.value = to_time(this.value)">
               </div>Defaults to None (until the end)
             </td>
