@@ -7,9 +7,8 @@ import os
 from time import sleep
 
 def test_clean_msg():
-    assert cs.clean_msg("Test") == "test"
-    assert cs.clean_msg("Test :cat: ") == "test"
-    assert cs.clean_msg('áÁàÀâÂãÃåÅçÇéÉèÈêÊëËíÍìÌîÎïÏñÑóÓòÒôÔõÕúÚùÙûÛ') == 'aAaAaAaAaAcCeEeEeEeEiIiIiIiInNoOoOoOoOuUuUuU'.lower()
+    assert cs.clean_msg(" Test ") == "Test"
+    assert cs.clean_msg("Test :cat:") == "Test"
 
 def test_time2seconds():
     assert cs.time2seconds("","","") == None
@@ -20,6 +19,19 @@ def test_time2seconds():
     assert cs.time2seconds("4","3","") == 4*60*60 + 3*60
     assert cs.time2seconds("","3","2") == 3*60 + 2
     assert cs.time2seconds("4","","2") == 4*60*60 + 2
+
+def test_levenshtein_distance():
+    assert cs.levenshtein_distance("Test","test") == 1
+    assert cs.levenshtein_distance("Test1","test") == 2
+    assert cs.levenshtein_distance("Test!","Test") == 1
+    assert cs.levenshtein_distance("!Test!","Test") == 2
+    
+def test_is_similar():
+    assert cs.is_similar("Test","test")
+    assert cs.is_similar("Test","Test!")
+    assert not cs.is_similar("test","Test!","sensitive",1)
+    assert cs.is_similar("test","Test!","sensitive",2)
+    assert cs.is_similar("test","TEST!","insensitive",1)
 
 @pytest.fixture
 def client():
@@ -65,7 +77,7 @@ def test_past_broadcast_youtube(client):
     response = client.get('/get_current_top_10')
     assert response.status_code == 200
     json = response.json
-    assert json[0][0] == "berge des wahnsinns"
-    assert json[0][1] == 17
-    assert json[0][2] == 84
-    assert json[0][3] == 20.2
+    assert json[0]["message"] == "Berge des Wahnsinns"
+    assert json[0]["count"] == 12
+    assert json[0]["total_count"] == 56
+    assert json[0]["percent"] == 21.429

@@ -6,8 +6,8 @@ function sanitizeHTML(text) {
 
 function update_stats(data) {
     if (data.length == 0) { return; }
-    var output = 'number of messages: ' + data[0][2] + '<br><table class="table top10 is-striped is-narrow">';
-    data.forEach(row => output += '<tr><td><progress class="progress is-info" value="' + row[1] + '" max="' + row[2] + '"></progress></td><td>' + row[1] + '<span class="icon"><i class="bi bi-person"></i></span></td><td>' + row[3].toFixed(1) + '&#8202;%</td><td>' + sanitizeHTML(row[0]) + '</td></tr>');
+    var output = 'number of messages: ' + data[0]['total_count'] + '<br><table class="table top10 is-striped is-narrow">';
+    data.forEach(row => output += '<tr><td><progress class="progress is-info" value="' + row['count'] + '" max="' + row['total_count'] + '"></progress></td><td>' + row['count'] + '<span class="icon"><i class="bi bi-person"></i></span></td><td>' + row['percent'].toFixed(1) + '&#8202;%</td><td>' + sanitizeHTML(row['message']) + '</td></tr>');
     output += '</table>';
     document.getElementById('stats').innerHTML = output;
 }
@@ -26,7 +26,7 @@ function start(broadcast_type = 'live') {
         document.getElementById('btn').innerHTML = '<button class="button is-danger" onclick="stop()">Stop</button>';
     }
     document.getElementById('stats').innerHTML = '<br><table class="table top10 is-striped is-narrow"><tr><td><progress class="progress is-info" max="100"></progress></td><td>gathering chat messages...</td></tr></table>';
-    intervalID = setInterval(fetch_stats, 2000);
+    intervalID = setInterval(fetch_stats, 1500);
 }
 
 function stop() {

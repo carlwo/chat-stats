@@ -18,16 +18,42 @@ def get_config(param = None):
               "exit_lock": os.path.join(filedir, 'exit.lock')}
     return config[param] if param else config
 
-def clean_msg(msg):
-    """Used to clean a chat message before inserting it into the database."""
-    i = 'áÁàÀâÂãÃåÅçÇéÉèÈêÊëËíÍìÌîÎïÏñÑóÓòÒôÔõÕúÚùÙûÛ'
-    o = 'aAaAaAaAaAcCeEeEeEeEiIiIiIiInNoOoOoOoOuUuUuU'
-    transtab = str.maketrans(i, o)
-    msg = msg.lower()                   # transform to lower case
-    msg = msg.translate(transtab)       # replace common characters with accents
-    msg = sub(':[a-z_]+:', '', msg)     # remove emojis
-    msg = msg.strip()                   # remove spaces at the beginning and at the end
-    return msg
+def time2seconds(hh="",mm="",ss=""):
+    if len(hh) == 0 and len(mm) == 0 and len(ss) == 0:
+        return None
+    else:
+        return int("0" + hh) * 60 * 60 + int("0" + mm) * 60 + int("0" + ss)
+
+def levenshtein_distance(s, t):
+    ''' Compute the Levenshtein distance between s and t.
+        For mor information see: https://en.wikipedia.org/wiki/Levenshtein_distance
+    '''
+    if len(s) > len(t):
+        s, t = t, s
+    v0 = list(range(len(t) + 1))
+    for i,x in enumerate(s):
+        v1 = [i+1]
+        for j,y in enumerate(t):
+            v1.append(min((v0[j + 1] + 1, v1[j] + 1, v0[j] if x == y else v0[j] + 1)))
+        v0 = v1
+    return v0[-1]
+
+def is_similar(s, t, case_sensitivity = "insensitive", max_distance = 1):
+    ''' Return True if s is similar to t. '''
+    if case_sensitivity == "insensitive":
+        s, t = s.lower(), t.lower()
+    if abs(len(s)-len(t)) > max_distance:
+        return False
+    elif s == t:
+        return True
+    else:
+        return (levenshtein_distance(s, t) <= max_distance)
+
+def clean_msg(message):
+    """ Remove emojis and leading/trailing white spaces from message."""
+    message = sub(':[a-z_]+:', '', message)  # remove emojis
+    message = message.strip()                # remove spaces at the beginning and at the end
+    return message
 
 def download_chat(pipe,url,broadcast_type,start_time,end_time,chat_type):
     """Retrieve the chat massages and insert them into the database."""
@@ -68,12 +94,6 @@ def download_chat(pipe,url,broadcast_type,start_time,end_time,chat_type):
             os.remove(config["exit_lock"])
         if os.path.exists(config["download_lock"]):
             os.remove(config["download_lock"])
-
-def time2seconds(hh="",mm="",ss=""):
-    if len(hh) == 0 and len(mm) == 0 and len(ss) == 0:
-        return None
-    else:
-        return int("0" + hh) * 60 * 60 + int("0" + mm) * 60 + int("0" + ss)
 
 def create_app():
     app = Flask(__name__)
@@ -121,23 +141,30 @@ def create_app():
         db = get_config("db")
         con = sqlite3.connect(db, isolation_level = None)
         cur = con.cursor()
-        cur.execute(''' 
-            WITH filtered_messages AS
-            (SELECT DISTINCT author_id, message FROM messages WHERE status = 'C')
-            SELECT 
-                m.message,
-                m.cnt,
-                t.total_cnt,
-                round(100.0*m.cnt/t.total_cnt,1) pct
-            FROM
-            (SELECT message, count(*) cnt FROM filtered_messages GROUP BY message) m
-            CROSS JOIN
-            (SELECT count(*) total_cnt FROM filtered_messages) t
-            ORDER BY m.cnt desc
-            LIMIT 10''')
-        result = cur.fetchall()
+        data = cur.execute(''' 
+            WITH current_messages AS (SELECT unix_time, author_id, message FROM messages WHERE status = 'C')
+            SELECT base.message, count(*) cnt
+            FROM current_messages base
+            JOIN (SELECT author_id, max(unix_time) AS max_unix_time FROM current_messages GROUP BY author_id) sub
+            ON base.author_id = sub.author_id AND base.unix_time = sub.max_unix_time
+            GROUP BY base.message
+            ORDER BY count(*) DESC, max(base.unix_time) DESC''')
+        result = []
+        total_count = 0
+        for row in data:
+            for result_row in result:
+                if is_similar(row[0], result_row["message"]):
+                    result_row["group"] += row[0] if len(result_row["group"]) == 0 else ", " + row[0]
+                    result_row["count"] += row[1]
+                    total_count += row[1]
+                    break
+            else:
+                result.append({"message":row[0],"group":"","count":row[1]})
+                total_count += row[1]
+    
         con.close()
-        return jsonify(result)
+        result.sort(key = lambda row: row["count"], reverse=True)
+        return jsonify([{**row , "percent":round(100.0*row["count"]/total_count,3), "total_count":total_count} for row in result[:10]])
 
     @app.route("/exit")
     def exit():
