@@ -13,7 +13,13 @@ function update_stats(data) {
 }
 
 function fetch_stats() {
-    fetch('get_current_top_10')
+    if (document.getElementById('radio_sensitive').checked) {
+        case_sensitivity = 'sensitive';
+    } else {
+        case_sensitivity = 'insensitive';
+    }
+    max_distance = document.getElementById('max_distance').value;
+    fetch('get_current_top_10/' + case_sensitivity + '/' + max_distance)
       .then(response => response.json())
       .then(data => update_stats(data));
 }

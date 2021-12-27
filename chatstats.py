@@ -136,8 +136,8 @@ def create_app():
         con.close()
         return jsonify(str(total_changes) + ' messages have been archived.')
 
-    @app.route("/get_current_top_10")
-    def get_current_top_10():
+    @app.route("/get_current_top_10/<string:case_sensitivity>/<int:max_distance>")
+    def get_current_top_10(case_sensitivity, max_distance):
         db = get_config("db")
         con = sqlite3.connect(db, isolation_level = None)
         cur = con.cursor()
@@ -153,7 +153,7 @@ def create_app():
         total_count = 0
         for row in data:
             for result_row in result:
-                if is_similar(row[0], result_row["message"]):
+                if is_similar(row[0], result_row["message"], case_sensitivity, max_distance):
                     result_row["group"] += row[0] if len(result_row["group"]) == 0 else ", " + row[0]
                     result_row["count"] += row[1]
                     total_count += row[1]

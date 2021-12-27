@@ -74,7 +74,7 @@ def test_past_broadcast_youtube(client):
     sleep(5)
     assert not os.path.exists(config["download_lock"])
     
-    response = client.get('/get_current_top_10')
+    response = client.get('/get_current_top_10/insensitive/1')
     assert response.status_code == 200
     json = response.json
     assert json[0]["message"] == "Berge des Wahnsinns"

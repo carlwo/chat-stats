@@ -4,7 +4,10 @@
   <div class="container">
   {%- if status == "OK": %}
     <br>
-    <div class="has-text-right"><a class="tag is-medium" href="{{ url_for('exit') }}">Exit&nbsp;<button class="delete"></button></a></div>
+    <div class="has-text-right">
+        <button class="button is-light is-info" onclick="document.getElementById('help').classList.add('is-active')"><span>Help</span><span class="icon"><i class="bi bi-question-circle"></i></span></button>&nbsp;&nbsp;&nbsp;
+        <button class="button is-light is-info" onclick="document.getElementById('settings').classList.add('is-active')"><span>Grouping Options</span><span class="icon"><i class="bi bi-gear"></i></span></button>&nbsp;&nbsp;&nbsp;
+        <a class="button is-light is-danger" href="{{ url_for('exit') }}"><span>Exit</span><span class="icon"><i class="bi bi-x-circle"></i></span></a></div>
     <h1 class="title">Chat Stats</h1>
     <h2 class="subtitle" id="subtitle">{{ message }}</h2>
     {%- if locked: %}
@@ -16,16 +19,73 @@
     </div>
     {%- endif %}
     {%- if broadcast_type == 'livestream': %}
-    <div class="notification" id="notification_info">
-      <button class="delete" onclick="hide_notification('info')"></button>
-      Press <em>Start</em> and <em>Stop</em> to get a <strong>ranking of the most frequent<br>
-        chat messages</strong> of the given stream in that period of time.<br>
-        Duplicate messages from the same author are ignored.
-    </div>
     <div id="btn"><button class="button is-success" onclick="start()">Start</button></div>
     <br>
     {%- endif %}
     <div id="stats"></div>
+    <div class="modal" id="settings">
+      <div class="modal-background" onclick="document.getElementById('settings').classList.remove('is-active')"></div>
+      <div class="modal-card">
+        <form action="javascript:void(0);">
+        <header class="modal-card-head">
+          <p class="modal-card-title">Grouping Options</p>
+          <button class="delete" onclick="document.getElementById('settings').classList.remove('is-active')"></button>
+        </header>
+        <section class="modal-card-body">
+          <div class="field">
+            <label class="label">Case sensitivity</label>
+            <div class="control">
+              <label class="radio">
+                <input type="radio" name="case_sensitivity" value="insensitive" checked>
+                insensitive
+              </label>
+              <label class="radio">
+                <input type="radio" name="case_sensitivity" id="radio_sensitive" value="sensitive">
+                sensitive
+              </label>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label">Maximum Levenshtein distance</label>
+            <div class="control">
+              <div class="select">
+                <select id="max_distance">
+                  <option value="0">0</option>
+                  <option value="1" selected>1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </section>
+        <footer class="modal-card-foot">
+          <button class="button is-success" onclick="document.getElementById('settings').classList.remove('is-active')">&nbsp;&nbsp;OK&nbsp;&nbsp;</button>
+          <input class="button is-info" type="reset" value="Reset">
+        </footer>
+        </form>
+      </div>
+    </div>
+    <div class="modal" id="help">
+      <div class="modal-background" onclick="document.getElementById('help').classList.remove('is-active')"></div>
+      <div class="modal-card">
+        <form action="javascript:void(0);">
+        <header class="modal-card-head">
+          <p class="modal-card-title">Help</p>
+          <button class="delete" onclick="document.getElementById('help').classList.remove('is-active')"></button>
+        </header>
+        <section class="modal-card-body">
+          Press <em>Start</em> and <em>Stop</em> to get a <strong>ranking of the most frequent chat messages</strong> of the given stream in that period of time.<br>
+          Only the last message per user is counted.
+        </section>
+        <footer class="modal-card-foot">
+          <button class="button is-success" onclick="document.getElementById('help').classList.remove('is-active')">&nbsp;&nbsp;OK&nbsp;&nbsp;</button>
+        </footer>
+        </form>
+      </div>
+    </div>
   {%- else %} 
     <br>
     <br>
