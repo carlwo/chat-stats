@@ -154,12 +154,12 @@ def create_app():
         for row in data:
             for result_row in result:
                 if is_similar(row[0], result_row["message"], case_sensitivity, max_distance):
-                    result_row["group"] += row[0] if len(result_row["group"]) == 0 else ", " + row[0]
+                    result_row["details"] += ", " + row[0] + " ("+str(row[1])+")"
                     result_row["count"] += row[1]
                     total_count += row[1]
                     break
             else:
-                result.append({"message":row[0],"group":"","count":row[1]})
+                result.append({"message":row[0],"details":"("+str(row[1])+")","count":row[1]})
                 total_count += row[1]
     
         con.close()

@@ -1,3 +1,7 @@
+:root {
+  --display-details: none;
+}
+
 .top10 tr:first-child {
     font-weight: bold;
 }
@@ -6,10 +10,43 @@
     font-size: large;
 }
 
+.top10 td:first-child {
+    width: 8em;
+}
+
+.top10 td:nth-child(2) {
+    width: 4.5em;
+}
+
+.top10 td:nth-child(3) {
+    width: 4em;
+}
+
 .top10 td:nth-child(2),
 .top10 td:nth-child(3) {
     text-align: right;
     white-space: nowrap;
+}
+
+.top10 .details {
+    display: var(--display-details, none);
+    font-size: medium;
+}
+
+.top10 tr:hover .details {
+    display: inline-block;
+}
+
+.top10 tr:hover {
+    background-color: hsl(206, 70%, 96%) !important;
+}
+
+#btn button {
+    width: 5.5em;
+}
+
+#btn .text {
+    margin-right: auto;
 }
 
 a.tag:hover {
@@ -22,7 +59,6 @@ a.tag:hover {
 
 .progress {
     margin-top: 0.3em;
-    width: 8em;
 }
 
 .notification {
@@ -39,6 +75,6 @@ a.tag:hover {
     font-weight: bold;
 }
 
-#time_input{
+#time-input {
     display: none;
 }
