@@ -73,7 +73,7 @@ def download_chat(pipe,url,broadcast_type,start_time,end_time,chat_type):
 
         chat = ChatDownloader().get_chat(url=url, start_time=start_time, end_time=end_time, chat_type=chat_type)
         with open(config["download_lock"],'w') as lockfile:
-            lockfile.write(str(os.getpid()) + chr(31) + broadcast_type + chr(31) + chat.title + chr(31) + url)
+            lockfile.write(str(os.getpid()) + chr(31) + broadcast_type + chr(31) + chat.title.replace(chr(31),"") + chr(31) + url.replace(chr(31),""))
         pipe.send({"status":"OK", "message":chat.title})
         for row in chat:
             if os.path.exists(config["exit_lock"]) or not os.path.exists(config["download_lock"]):
