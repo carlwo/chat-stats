@@ -99,9 +99,11 @@ def create_app():
     app = Flask(__name__)
     
     logfile = get_config("logfile")
+    if os.path.exists(logfile):
+        os.remove(logfile)
     if not os.path.exists(os.path.dirname(logfile)):
         os.mkdir(os.path.dirname(logfile))
-    logging.basicConfig(filename=logfile, filemode='w', level=logging.INFO)
+    logging.basicConfig(filename=logfile, level=logging.INFO)
     
     @app.route("/", methods=['GET', 'POST'])
     def index():
