@@ -60,6 +60,13 @@ function check_broadcast_type() {
     }
 }
 
+function submit_form() {
+    if (document.getElementById('url').value) {
+        document.getElementById('continue-btn').innerHTML = '<div class="loader"></div>';
+        document.getElementById('index-form').submit();
+    }
+}
+
 function show_group_members(option) {
     if (option == 'yes') {
         document.querySelector(':root').style.setProperty('--display-details', 'inline-block');
