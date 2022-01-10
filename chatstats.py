@@ -166,7 +166,10 @@ def create_app():
     
         con.close()
         result.sort(key = lambda row: row["count"], reverse=True)
-        return jsonify([{**row , "percent":round(100.0*row["count"]/total_count,3), "total_count":total_count} for row in result[:10]])
+        for row in result[:10]:
+            row["percent"] = round(100.0*row["count"]/total_count,3)
+            row["total_count"] = total_count
+        return jsonify(result[:10])
 
     @app.route("/exit")
     def exit():
