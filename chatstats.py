@@ -86,7 +86,7 @@ def download_chat(pipe,url,broadcast_type,start_time,end_time,chat_type):
         con.close()
     except KeyboardInterrupt:
         pass
-    except (errors.URLNotProvided, errors.ChatGeneratorError, errors.SiteNotSupported, errors.InvalidURL, errors.NoChatReplay) as ex:
+    except Exception as ex:
         pipe.send({"status":"ERROR", "message":str(ex)})
     finally:
         pipe.close()
