@@ -28,7 +28,7 @@ On the index page you will be asked to enter a URL of a livestream or past broad
 
 ## Statistics
 
-After gathering the chat messages from the given stream, a top 10 statistic of the most frequent chat messages will be shown. Duplicate messages from the same author will be ignored.
+After gathering the chat messages from the given stream, a top 10 statistic of the most frequent chat messages will be shown. Only the most recent message from each user is counted.
 
 This is particularly useful when a question is asked during a livestream and you want to know which answer is given most frequently.
 
