@@ -72,7 +72,7 @@ def download_chat(pipe,url,broadcast_type,start_time,end_time,chat_type):
         cur.execute('CREATE TABLE messages (unix_time integer, author_id text, author_name text, message_type text, message text, status text)')
 
         chat = ChatDownloader().get_chat(url=url, start_time=start_time, end_time=end_time, chat_type=chat_type)
-        with open(config["download_lock"],'w') as lockfile:
+        with open(config["download_lock"],mode='w',encoding='utf-8') as lockfile:
             lockfile.write(str(os.getpid()) + chr(31) + broadcast_type + chr(31) + chat.title.replace(chr(31),"") + chr(31) + url.replace(chr(31),""))
         pipe.send({"status":"OK", "message":chat.title})
         for row in chat:
@@ -110,7 +110,7 @@ def create_app():
         download_lock = get_config("download_lock")
         if request.method == 'POST':
             if os.path.exists(download_lock):
-                with open(download_lock,'r') as lockfile:
+                with open(download_lock,mode='r',encoding='utf-8') as lockfile:
                     lockinfo = lockfile.readline().split(chr(31),3)
                     return render_template('chatstats.html', url = lockinfo[3], broadcast_type = lockinfo[1], status = "OK", message = lockinfo[2], locked = True)
             else:
@@ -175,7 +175,7 @@ def create_app():
     def exit():
         config = get_config()
         if os.path.exists(config["download_lock"]):
-            with open(config["exit_lock"],'w') as lockfile:
+            with open(config["exit_lock"],mode='w',encoding='utf-8') as lockfile:
                 pass
         return redirect(url_for('index'))
         
