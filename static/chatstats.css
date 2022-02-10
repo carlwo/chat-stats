@@ -10,6 +10,11 @@
     font-size: large;
 }
 
+.top10 th {
+    font-size: large;
+    font-weight: normal;
+}
+
 .top10 td:first-child {
     width: 8em;
 }
@@ -23,6 +28,7 @@
 }
 
 .top10 td:nth-child(2),
+.top10 th:nth-child(2),
 .top10 td:nth-child(3) {
     text-align: right;
     white-space: nowrap;
@@ -37,7 +43,7 @@
     display: inline-block;
 }
 
-.top10 tr:hover {
+.top10 tbody tr:hover {
     background-color: hsl(206, 70%, 96%) !important;
 }
 

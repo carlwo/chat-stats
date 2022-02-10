@@ -5,11 +5,13 @@ function sanitizeHTML(text) {
 }
 
 function update_stats(data) {
-    if (data.length == 0) { return; }
-    var output = data[0]['total_count'] + ' messages<br><table class="table top10 is-striped is-hoverable is-narrow is-fullwidth">';
-    data.forEach(row => output += '<tr><td><progress class="progress is-info" value="' + row['count'] + '" max="' + row['total_count'] + '"></progress></td><td>' + row['count'] + '<span class="icon"><i class="bi bi-person"></i></span></td><td>' + row['percent'].toFixed(1) + '&#8202;%</td><td>' + sanitizeHTML(row['message']) + '<span class="details">&nbsp;' + sanitizeHTML(row['details']) + '</span></td></tr>');
-    output += '</table>';
-    document.getElementById('stats').innerHTML = output;
+    if (data.length > 0) {
+        var output = '<table class="table top10 is-striped is-hoverable is-narrow is-fullwidth">';
+        output += '<thead><tr><th></th><th>&Sigma; ' + data[0]['total_count'] + '<span class="icon"><i class="bi bi-person"></i></span></th><th></th><th></th></tr></thead><tbody>';
+        data.forEach(row => output += '<tr><td><progress class="progress is-info" value="' + row['count'] + '" max="' + row['total_count'] + '"></progress></td><td>' + row['count'] + '<span class="icon"><i class="bi bi-person"></i></span></td><td>' + row['percent'].toFixed(1) + '&#8202;%</td><td>' + sanitizeHTML(row['message']) + '<span class="details">&nbsp;' + sanitizeHTML(row['details']) + '</span></td></tr>');
+        output += '</tbody></table>';
+        document.getElementById('stats').innerHTML = output;
+    }
 }
 
 function fetch_stats() {
@@ -31,7 +33,7 @@ function start(broadcast_type = 'live') {
         fetch('archive_messages');
         document.getElementById('btn').innerHTML = '<button class="button is-danger" onclick="stop()"><span class="icon"><i class="bi bi-stop-circle"></i></span><span class="text">Stop</span></button>';
     }
-    document.getElementById('stats').innerHTML = '<br><table class="table top10 is-striped is-narrow"><tr><td><progress class="progress is-info" max="100"></progress></td><td>gathering chat messages...</td></tr></table>';
+    document.getElementById('stats').innerHTML = '<table class="table top10 is-striped is-narrow mt-6"><tr><td><progress class="progress is-info" max="100"></progress></td><td>gathering chat messages...</td></tr></table>';
     intervalID = setInterval(fetch_stats, 1500);
 }
 
