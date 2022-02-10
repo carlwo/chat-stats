@@ -34,7 +34,7 @@ function start(broadcast_type = 'live') {
         document.getElementById('btn').innerHTML = '<button class="button is-danger" onclick="stop()"><span class="icon"><i class="bi bi-stop-circle"></i></span><span class="text">Stop</span></button>';
     }
     document.getElementById('stats').innerHTML = '<table class="table top10 is-striped is-narrow mt-6"><tr><td><progress class="progress is-info" max="100"></progress></td><td>gathering chat messages...</td></tr></table>';
-    intervalID = setInterval(fetch_stats, 1500);
+    intervalID = setInterval(fetch_stats, 1000);
 }
 
 function stop() {
