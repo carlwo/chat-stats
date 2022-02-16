@@ -5,6 +5,7 @@
   {%- if status == "OK": %}
     <br>
     <div class="has-text-right">
+        <span class="theme-label">Theme:</span><div class="select mr-3"><select id="theme-select" onchange="change_theme()"><option value="light">Light</option><option value="dark">Dark</option><option value="familyfeud">Family Feud</option></select></div>
         <button class="button is-light is-info" onclick="document.getElementById('help').classList.add('is-active')"><span class="icon"><i class="bi bi-question-circle"></i></span><span>Help</span></button>&nbsp;&nbsp;&nbsp;
         <button class="button is-light is-info" onclick="document.getElementById('settings').classList.add('is-active')"><span class="icon"><i class="bi bi-gear"></i></span><span>Grouping Options</span></button>&nbsp;&nbsp;&nbsp;
         <a class="button is-light is-danger" href="{{ url_for('exit') }}"><span class="icon"><i class="bi bi-x-circle"></i></span><span>Exit</span></a></div>

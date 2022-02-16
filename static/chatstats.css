@@ -2,6 +2,12 @@
   --display-details: none;
 }
 
+.theme-label {
+    display: inline-block;
+    padding-top: 0.5em;
+    margin-right: 0.7em;
+}
+
 .top10 tr:first-child {
     font-weight: bold;
 }
@@ -10,25 +16,30 @@
     font-size: large;
 }
 
-.top10 th {
+.top10 th:nth-child(3) {
     font-size: large;
     font-weight: normal;
+    padding-left: 0px;
 }
 
 .top10 td:first-child {
-    width: 8em;
+    padding-left: 0px;
+    padding-right: 0px;
+    width: 6em;
 }
 
+.top10 th:nth-child(2),
 .top10 td:nth-child(2) {
-    width: 4.5em;
-}
-
-.top10 td:nth-child(3) {
+    padding-right: 0px;
     width: 4em;
 }
 
+.top10 td:nth-child(3) {
+    width: 1em;
+}
+
 .top10 td:nth-child(2),
-.top10 th:nth-child(2),
+.top10 th:nth-child(3),
 .top10 td:nth-child(3) {
     text-align: right;
     white-space: nowrap;
@@ -43,8 +54,8 @@
     display: inline-block;
 }
 
-.top10 tbody tr:hover {
-    background-color: hsl(206, 70%, 96%) !important;
+#stats .top10 tbody tr:hover td {
+    background-color: hsl(206, 70%, 96%);
 }
 
 #btn button {
