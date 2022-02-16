@@ -51,8 +51,8 @@ def is_similar(s, t, case_sensitivity = "insensitive", max_distance = 1):
 
 def clean_msg(message):
     """ Remove emojis and leading/trailing white spaces from message."""
-    message = sub(':[a-z_]+:', '', message)  # remove emojis
-    message = message.strip()                # remove spaces at the beginning and at the end
+    message = sub(':[a-zA-Z0-9_]+:', '', message)  # remove emojis
+    message = message.strip()                      # remove spaces at the beginning and at the end
     return message
 
 def download_chat(pipe,url,broadcast_type,start_time,end_time,chat_type):

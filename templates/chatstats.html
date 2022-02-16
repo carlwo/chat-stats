@@ -30,7 +30,7 @@
         <form action="javascript:void(0);">
         <header class="modal-card-head">
           <p class="modal-card-title">Grouping Options</p>
-          <button class="delete" onclick="document.getElementById('settings').classList.remove('is-active')"></button>
+          <button type="button" class="delete" onclick="document.getElementById('settings').classList.remove('is-active')"></button>
         </header>
         <section class="modal-card-body">
           <div class="field">
@@ -76,7 +76,7 @@
           </div>
         </section>
         <footer class="modal-card-foot">
-          <button class="button is-success" onclick="document.getElementById('settings').classList.remove('is-active')">&nbsp;&nbsp;OK&nbsp;&nbsp;</button>
+          <button type="button" class="button is-success" onclick="document.getElementById('settings').classList.remove('is-active')">&nbsp;&nbsp;OK&nbsp;&nbsp;</button>
           <input class="button is-info" type="reset" onclick="show_group_members('no')" value="Reset">
         </footer>
         </form>
@@ -88,14 +88,14 @@
         <form action="javascript:void(0);">
         <header class="modal-card-head">
           <p class="modal-card-title">Help</p>
-          <button class="delete" onclick="document.getElementById('help').classList.remove('is-active')"></button>
+          <button type="button" class="delete" onclick="document.getElementById('help').classList.remove('is-active')"></button>
         </header>
         <section class="modal-card-body">
           Press <em>Start</em> and <em>Stop</em> to get a <strong>ranking of the most frequent chat messages</strong> of the given stream in that period of time.<br>
           Only the last message per user is counted.
         </section>
         <footer class="modal-card-foot">
-          <button class="button is-success" onclick="document.getElementById('help').classList.remove('is-active')">&nbsp;&nbsp;OK&nbsp;&nbsp;</button>
+          <button type="button" class="button is-success" onclick="document.getElementById('help').classList.remove('is-active')">&nbsp;&nbsp;OK&nbsp;&nbsp;</button>
         </footer>
         </form>
       </div>

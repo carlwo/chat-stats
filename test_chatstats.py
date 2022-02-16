@@ -9,6 +9,7 @@ from time import sleep
 def test_clean_msg():
     assert cs.clean_msg(" Test ") == "Test"
     assert cs.clean_msg("Test :cat:") == "Test"
+    assert cs.clean_msg("Test :cat_2: :Dog:") == "Test"
 
 def test_time2seconds():
     assert cs.time2seconds("","","") == None
@@ -54,7 +55,7 @@ def test_index(client):
     assert b'<input type="text" name="end_ss" id="end_ss"' in html
     assert b'<input type="radio" name="chat_type" value="live"' in html
     assert b'<input type="radio" name="chat_type" value="top"' in html
-    assert b'<button class="button is-link" onclick="submit_form()">Continue</button>' in html
+    assert b'<button type="submit" class="button is-link">Continue</button>' in html
 
 def test_past_broadcast_youtube(client):
     config =  cs.get_config()

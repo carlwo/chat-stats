@@ -62,10 +62,9 @@ function check_broadcast_type() {
     }
 }
 
-function submit_form() {
-    if (document.getElementById('url').value) {
+function submit_form(event) {
+    if (document.getElementById('index-form').checkValidity()) {
         document.getElementById('continue-btn').innerHTML = '<div class="loader"></div>';
-        document.getElementById('index-form').submit();
     }
 }
 
